@@ -5,13 +5,15 @@ html, body {
   height: 100%;
 }
 
-.pages {
+#pages {
   @selected-color: @primary-color;
   float: left;
   overflow-x: hidden;
   overflow-y: scroll;
+  height: 100%;
 
   .page {
+    display: block;
     margin: 8px;
     min-width: 90px;
     max-width: 160px;
@@ -24,9 +26,13 @@ html, body {
   }
 }
 
-.main {
+#main {
   margin-left: 180px;
   height: 100%;
   background: red;
   text-align: center;
+
+  #display {
+    margin-top: 32px;
+  }
 }

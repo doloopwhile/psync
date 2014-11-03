@@ -69,12 +69,13 @@ func main() {
 		fmt.Fprintf(os.Stderr, "failed to glob image files")
 		fail(err)
 	}
+	fmt.Println(paths)
 
 	index := &Index{
 		PdfUrl: "/files/" + pdfName,
 	}
 	for i, _ := range paths {
-		url := fmt.Sprintf("/files/p-%d.jpg", i+1)
+		url := fmt.Sprintf("/files/p-%d.jpg", i)
 		index.PageUrls = append(index.PageUrls, url)
 	}
 
