@@ -10,7 +10,6 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/codegangsta/negroni"
@@ -41,8 +40,8 @@ type Index struct {
 }
 
 type Polling struct {
-	Page chan int
-	Term chan struct{}
+	PageChanged chan struct{}
+	Terminated  chan struct{}
 }
 
 func main() {
@@ -91,54 +90,96 @@ func main() {
 	fp.Close()
 
 	pollings := []*Polling{}
+	page := 0
 
 	r := mux.NewRouter()
 	r.PathPrefix("/files/").Methods("GET", "HEAD").
 		Handler(http.StripPrefix("/files", http.FileServer(http.Dir(temp))))
 
-	r.Path("/polling").Methods("GET").HandlerFunc(
-		func(res http.ResponseWriter, req *http.Request) {
-			res.Header().Set("Content-type", "text/event-stream")
-			res.Header().Set("Cache-Control", "no-cache")
-			res.Header().Set("Connection", "keep-alive")
+	r.PathPrefix("/view/").Methods("GET", "HEAD").
+		Handler(http.StripPrefix("/view", http.FileServer(http.Dir("./view"))))
 
-			p := &Polling{
-				Page: make(chan int),
-				Term: make(chan struct{}),
+	r.Path("/polling").Methods("GET").
+		HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		hj, ok := res.(http.Hijacker)
+		if !ok {
+			http.Error(res, "webserver doesn't support hijacking", http.StatusInternalServerError)
+			return
+		}
+
+		conn, bufrw, err := hj.Hijack()
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer conn.Close()
+
+		bufrw.WriteString("Content-type: text/event-stream\n")
+		bufrw.WriteString("Cache-Control: no-cache\n")
+		bufrw.WriteString("Connection: keep-alive\n")
+		bufrw.WriteString("\n")
+		bufrw.Flush()
+
+		p := &Polling{
+			Terminated:  make(chan struct{}, 10),
+			PageChanged: make(chan struct{}, 10),
+		}
+		pollings = append(pollings, p)
+
+		ok = true
+		writePage := func() {
+			fmt.Println("data:" + strconv.Itoa(page))
+			bufrw.WriteString("data:" + strconv.Itoa(page) + "\n")
+			err := bufrw.Flush()
+			if err != nil {
+				fmt.Println(err)
+				ok = false
 			}
-			pollings = append(pollings, p)
-			for {
-				select {
-				case <-time.After(time.Second):
-					fmt.Println("data:nop")
-					res.Write([]byte("data:nop"))
-				case n := <-p.Page:
-					fmt.Println("data:" + strconv.Itoa(n))
-					res.Write([]byte("data:" + strconv.Itoa(n)))
-				case <-p.Term:
-					break
-				}
+		}
+		for ok {
+			select {
+			case <-p.Terminated:
+				fmt.Println("terminated")
+				ok = false
+				return
+			case <-p.PageChanged:
+				writePage()
+			case <-time.After(3 * time.Second):
+				writePage()
 			}
-		})
+		}
+	})
 
 	r.Path("/move/{page}").Methods("POST").
 		HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		page, err := strconv.Atoi(mux.Vars(req)["page"])
+		p, err := strconv.Atoi(mux.Vars(req)["page"])
 		if err != nil {
 			res.WriteHeader(http.StatusBadRequest)
 			return
 		}
+		page = p
 
-		wg := sync.WaitGroup{}
+		fmt.Println(pollings)
 		for _, p := range pollings {
-			wg.Add(1)
 			go func() {
-				p.Page <- page
-				wg.Done()
+				p.PageChanged <- struct{}{}
 			}()
 		}
 
-		wg.Wait()
+		res.WriteHeader(http.StatusNoContent)
+	})
+
+	r.Path("/terminate").Methods("POST").
+		HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+
+		fmt.Println(len(pollings))
+		for _, p := range pollings {
+			go func() {
+				p.Terminated <- struct{}{}
+			}()
+		}
+		pollings = []*Polling{}
+
 		res.WriteHeader(http.StatusNoContent)
 	})
 
