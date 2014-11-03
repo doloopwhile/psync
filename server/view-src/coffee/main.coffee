@@ -12,3 +12,13 @@ jQuery ($) =>
     $(this).addClass("selected-page")
     url = $(this).attr("src")
     $("#display").attr(src: url)
+
+  polling = new EventSource("/polling")
+  polling.onmessage = (e) =>
+    $("#polling").text(e.data)
+    i = JSON.parse(e.data)
+    p = $(".page").get(i)
+    unless p?
+      return
+    url = $(p).attr("src")
+    $("#display").attr(src: url)

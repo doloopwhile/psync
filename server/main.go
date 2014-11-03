@@ -115,9 +115,9 @@ func main() {
 		}
 		defer conn.Close()
 
+		bufrw.WriteString("HTTP/1.1 200 OK\n")
 		bufrw.WriteString("Content-type: text/event-stream\n")
 		bufrw.WriteString("Cache-Control: no-cache\n")
-		bufrw.WriteString("Connection: keep-alive\n")
 		bufrw.WriteString("\n")
 		bufrw.Flush()
 
@@ -129,23 +129,24 @@ func main() {
 
 		ok = true
 		writePage := func() {
-			fmt.Println("data:" + strconv.Itoa(page))
-			bufrw.WriteString("data:" + strconv.Itoa(page) + "\n")
+			fmt.Println("data: " + strconv.Itoa(page))
+			bufrw.WriteString("data: " + strconv.Itoa(page) + "\n\n")
 			err := bufrw.Flush()
 			if err != nil {
 				fmt.Println(err)
 				ok = false
 			}
 		}
+
+		writePage()
+
 		for ok {
 			select {
 			case <-p.Terminated:
 				fmt.Println("terminated")
 				ok = false
 				return
-			case <-p.PageChanged:
-				writePage()
-			case <-time.After(3 * time.Second):
+			case <-time.After(time.Duration(200) * time.Millisecond):
 				writePage()
 			}
 		}
@@ -159,14 +160,6 @@ func main() {
 			return
 		}
 		page = p
-
-		fmt.Println(pollings)
-		for _, p := range pollings {
-			go func() {
-				p.PageChanged <- struct{}{}
-			}()
-		}
-
 		res.WriteHeader(http.StatusNoContent)
 	})
 
