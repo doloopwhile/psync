@@ -28,7 +28,7 @@
           src: url
         });
       });
-      polling = new EventSource("/polling");
+      polling = new EventSource("/api/polling");
       return polling.onmessage = function(e) {
         var i, p, url;
         $("#polling").text(e.data);

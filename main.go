@@ -51,7 +51,7 @@ func main() {
 	r.PathPrefix("/view/").Methods("GET", "HEAD").
 		Handler(http.StripPrefix("/view", http.FileServer(http.Dir("./view"))))
 
-	r.Path("/polling").Methods("GET").
+	r.Path("/api/polling").Methods("GET").
 		HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		hj, ok := res.(http.Hijacker)
 		if !ok {
@@ -82,8 +82,7 @@ func main() {
 		writePage := func() {
 			fmt.Println("data: " + strconv.Itoa(page))
 			bufrw.WriteString("data: " + strconv.Itoa(page) + "\n\n")
-			err := bufrw.Flush()
-			if err != nil {
+			if err := bufrw.Flush(); err != nil {
 				fmt.Println(err)
 				ok = false
 			}
@@ -93,17 +92,13 @@ func main() {
 
 		for ok {
 			select {
-			case <-p.Terminated:
-				fmt.Println("terminated")
-				ok = false
-				return
-			case <-time.After(time.Duration(200) * time.Millisecond):
+			case <-time.After(time.Duration(500) * time.Millisecond):
 				writePage()
 			}
 		}
 	})
 
-	r.Path("/move/{page}").Methods("POST").
+	r.Path("/api/move/{page}").Methods("POST").
 		HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		p, err := strconv.Atoi(mux.Vars(req)["page"])
 		if err != nil {
@@ -111,20 +106,6 @@ func main() {
 			return
 		}
 		page = p
-		res.WriteHeader(http.StatusNoContent)
-	})
-
-	r.Path("/terminate").Methods("POST").
-		HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-
-		fmt.Println(len(pollings))
-		for _, p := range pollings {
-			go func() {
-				p.Terminated <- struct{}{}
-			}()
-		}
-		pollings = []*Polling{}
-
 		res.WriteHeader(http.StatusNoContent)
 	})
 

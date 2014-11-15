@@ -3,27 +3,27 @@ module.exports = (grunt) =>
     coffee:
       dist:
         files:
-          'view/js/main.js': 'view-src/coffee/main.coffee'
+          'view/audience.js': 'view-src/audience.coffee'
     less:
       dist:
         files:
-          'view/css/main.css': 'view-src/less/main.less'
+          'view/audience.css': 'view-src/audience.less'
     slim:
       dist:
         files:
-          'view/index.html': 'view-src/slim/index.slim'
+          'view/audience.html': 'view-src/audience.slim'
     watch:
       options:
         atBegin: true
         livereload: true
       coffee:
-        files: 'view-src/coffee/*.coffee'
+        files: 'view-src/*.coffee'
         tasks: 'coffee'
       slim:
-        files: 'view-src/slim/*.slim'
+        files: 'view-src/*.slim'
         tasks: 'slim'
       less:
-        files: 'view-src/less/*.less'
+        files: 'view-src/*.less'
         tasks: 'less'
 
   grunt.loadNpmTasks 'grunt-contrib-coffee'
@@ -31,6 +31,5 @@ module.exports = (grunt) =>
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-slim'
   grunt.loadNpmTasks 'grunt-notify'
-  grunt.loadNpmTasks 'grunt-elm'
 
   grunt.registerTask('default', ['slim', 'less', 'coffee'])
