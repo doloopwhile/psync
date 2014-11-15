@@ -1,14 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"os/exec"
-	"path"
-	"path/filepath"
 	"strconv"
 	"time"
 
@@ -45,57 +41,12 @@ type Polling struct {
 }
 
 func main() {
-	if len(os.Args) != 2 {
-		usage()
-	}
-
-	temp, err := ioutil.TempDir(os.TempDir(), "psync")
-	if err != nil {
-		fail(err)
-	}
-
-	cmd := exec.Command("convert", os.Args[1], path.Join(temp, "p.jpg"))
-	if err := cmd.Run(); err != nil {
-		fail(err)
-	}
-
-	pdfName := path.Base(os.Args[1])
-	if err := copyFile(os.Args[1], path.Join(temp, pdfName), 0700); err != nil {
-		fmt.Fprintf(os.Stderr, "failed to copy %s", os.Args[1])
-		fail(err)
-	}
-	paths, err := filepath.Glob(path.Join(temp, "p-*.jpg"))
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to glob image files")
-		fail(err)
-	}
-	fmt.Println(paths)
-
-	index := &Index{
-		PdfUrl: "/files/" + pdfName,
-	}
-	for i, _ := range paths {
-		url := fmt.Sprintf("/files/p-%d.jpg", i)
-		index.PageUrls = append(index.PageUrls, url)
-	}
-
-	fp, err := os.Create(path.Join(temp, "index.json"))
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to create index file")
-		fail(err)
-	}
-	if err := json.NewEncoder(fp).Encode(index); err != nil {
-		fmt.Fprintf(os.Stderr, "failed to create index file")
-		fail(err)
-	}
-	fp.Close()
-
 	pollings := []*Polling{}
 	page := 0
 
 	r := mux.NewRouter()
 	r.PathPrefix("/files/").Methods("GET", "HEAD").
-		Handler(http.StripPrefix("/files", http.FileServer(http.Dir(temp))))
+		Handler(http.StripPrefix("/files", http.FileServer(http.Dir("./files"))))
 
 	r.PathPrefix("/view/").Methods("GET", "HEAD").
 		Handler(http.StripPrefix("/view", http.FileServer(http.Dir("./view"))))
