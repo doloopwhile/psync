@@ -4,14 +4,17 @@ module.exports = (grunt) =>
       dist:
         files:
           'view/audience.js': 'view-src/audience.coffee'
+          'view/admin.js': 'view-src/admin.coffee'
     less:
       dist:
         files:
           'view/audience.css': 'view-src/audience.less'
+          'view/admin.css': 'view-src/admin.less'
     slim:
       dist:
         files:
           'view/audience.html': 'view-src/audience.slim'
+          'view/admin.html': 'view-src/admin.slim'
     watch:
       options:
         atBegin: true
