@@ -15,6 +15,12 @@ module.exports = (grunt) =>
         files:
           'view/audience.html': 'view-src/audience.slim'
           'view/admin.html': 'view-src/admin.slim'
+    elm:
+      dist:
+        files:
+          'view/elm-audience/': 'elm-audience/index.elm'
+        options:
+          bundleRuntime: true
     watch:
       options:
         atBegin: true
@@ -28,11 +34,15 @@ module.exports = (grunt) =>
       less:
         files: 'view-src/*.less'
         tasks: 'less'
+      elm:
+        files: 'view-src/*.elm'
+        tasks: 'elm'
 
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-less'
   grunt.loadNpmTasks 'grunt-contrib-watch'
   grunt.loadNpmTasks 'grunt-slim'
   grunt.loadNpmTasks 'grunt-notify'
+  grunt.loadNpmTasks 'grunt-elm'
 
   grunt.registerTask('default', ['slim', 'less', 'coffee'])
