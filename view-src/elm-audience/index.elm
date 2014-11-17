@@ -21,7 +21,7 @@ scroll =
   let
     prevNext = foldp (\next (_, prev) -> (prev, next)) (0,0) polling
     delta    = 50 * Time.millisecond
-    duration = 250 * Time.millisecond
+    duration = 500 * Time.millisecond
   in
     (\now (period, (prev, curr)) ->
       let r = (now - period) / duration
@@ -76,17 +76,21 @@ maybeAppend mx marr =
 previews : [String] -> Int -> Int -> Float -> Element
 previews urls w h pageScroll =
   let
-    margin = 100
+    margin = 300
     pages = map (\url ->
               container w h middle <|
                 keepAspectScaledImage url (w - margin) (h - margin) 4 3
             ) urls
   in
-    collage w h (
-      indexedMap (\i e ->
-        moveX ((toFloat w) * ((toFloat i) - pageScroll)) (toForm e)
-      ) pages
-    )
+    layers [
+      container w h middle
+        (image 250 300 "/files/bg.jpg")
+    , collage w h (
+        indexedMap (\i e ->
+          moveX ((toFloat w) * ((toFloat i) - pageScroll)) (toForm e)
+        ) pages
+      )
+    ]
 
 keepAspectScaledImage url w h rw rh =
   let (nw, nh) = newSize w h rw rh
