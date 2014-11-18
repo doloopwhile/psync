@@ -69,6 +69,7 @@ func main() {
 		bufrw.WriteString("HTTP/1.1 200 OK\n")
 		bufrw.WriteString("Content-type: text/event-stream\n")
 		bufrw.WriteString("Cache-Control: no-cache\n")
+		bufrw.WriteString("Connection no-cache\n")
 		bufrw.WriteString("\n")
 		bufrw.Flush()
 
@@ -107,6 +108,10 @@ func main() {
 		}
 		page = p
 		res.WriteHeader(http.StatusNoContent)
+	})
+
+	r.Path("/").Methods("GET").HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		http.Redirect(res, req, "/view/elm-audience", http.StatusSeeOther)
 	})
 
 	n := negroni.New()
