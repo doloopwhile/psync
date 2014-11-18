@@ -1,21 +1,34 @@
 module Audience where
 
-import Http
-import Time
-import List
+import Color
 import Dict
+import Http
 import Json
+import List
+import Mouse
 import Signal
+import Time
 import Window
+import Text
 
 port polling : Signal Int
 
 main : Signal Element
-main = scene
-  <~ (Http.sendGet (Signal.constant "/files/index.json"))
-  ~ Window.width
-  ~ Window.height
-  ~ scroll
+main =
+  let s = scene
+          <~ (Http.sendGet (Signal.constant "/files/index.json"))
+          ~ Window.width
+          ~ Window.height
+          ~ scroll
+      p = (\x y ->
+            let
+              t = "(" ++ (show x) ++ ", " ++ (show y) ++ ")"
+              c = Color.hsl (atan2 (toFloat -y) (toFloat x)) 1 0.5
+            in
+              rightAligned (Text.color c (toText t))
+          ) <~ Mouse.x ~ Mouse.y
+  in
+    above <~ p ~ s
 
 scroll =
   let
@@ -33,16 +46,16 @@ scroll =
 
 scene : Http.Response String -> Int -> Int -> Float -> Element
 scene resp width height pageIndex = case resp of
-    Http.Success a ->
-      case Json.fromString a of
-        Nothing -> plainText "not json"
-        Just j ->
-          case getPageUrls j of
-            Just urls -> previews urls width height pageIndex
-            Nothing -> plainText "json in unexpected type"
-    Http.Failure code msg ->
-      plainText ((show code) ++ ":" ++ msg)
-    _ ->  plainText "waiting"
+  Http.Success a ->
+    case Json.fromString a of
+      Nothing -> plainText "not json"
+      Just j ->
+        case getPageUrls j of
+          Just urls -> previews urls width height pageIndex
+          Nothing -> plainText "json in unexpected type"
+  Http.Failure code msg ->
+    plainText ((show code) ++ ":" ++ msg)
+  _ ->  plainText "waiting"
 
 getPageUrls : Json.Value -> Maybe [String]
 getPageUrls j =
