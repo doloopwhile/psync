@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Embedding Elm in HTML!</title>
+  <script type="text/javascript" src="index.js"></script>
+</head>
+<body>
+</body>
+<script type="text/javascript">
+  var a = Elm.fullscreen(Elm.Audience, {
+    polling: 0,
+  });
+
+  var polling = new EventSource("/api/polling");
+  polling.onmessage = function(e) {
+    a.ports.polling.send(JSON.parse(e.data));
+  }
+</script>
+</html>
