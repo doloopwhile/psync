@@ -24,7 +24,7 @@ namespace :admin do
   end
 
   file 'view/admin/index.html' => %w{view-src/jq-admin/index.slim view/admin} do |t|
-    sh "slimrb -c #{t.prerequisites[0]} >| #{t}"
+    sh "slimrb #{t.prerequisites[0]} >| #{t}"
   end
 
   directory "view/admin"
@@ -65,12 +65,12 @@ namespace :pages do
     File.write("files/index.json", j.to_json)
   end
 
-  task 'files/slide.pdf' => %w{slide.pdf files} do
+  task 'files/slide.pdf' => %w{files} do
     sh 'rm -rf files/slide.pdf'
     sh 'cp slide.pdf files/slide.pdf'
   end
 
-  task 'files/bg.jpg' => %w{bg.jpg files} do
+  task 'files/bg.jpg' => %w{files} do
     sh 'rm -rf files/bg.jpg'
     sh 'cp bg.jpg files/bg.jpg'
   end
