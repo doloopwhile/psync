@@ -1,13 +1,15 @@
 require 'rake'
 require 'rake/clean'
+require 'json'
 
-task default: %w{
+task :default => %w{
   admin:build
   audience:build
+  pages:build
 }
 
 namespace :admin do
-  task build: %w{
+  task :build => %w{
     view/admin/index.html
     view/admin/index.css
     view/admin/index.js
@@ -29,7 +31,7 @@ namespace :admin do
 end
 
 namespace :audience do
-  task build: %w{
+  task :build => %w{
     view/audience/index.html
     view/audience/index.js
   }
@@ -44,4 +46,21 @@ namespace :audience do
   end
 
   directory "view/audience"
+end
+
+namespace :pages do
+  task build: [:pages]
+
+  task :pages => 'files' do
+    sh 'rm -rf files/p-*.jpg'
+    sh 'convert slide.pdf files/p.jpg'
+
+    n = Dir['files/p-*.jpg'].length
+    j = {
+      page_urls: n.times.map{|i| "/files/p-#{i}.jpg" }
+    }
+    File.write("files/index.json", j.to_json)
+  end
+
+  directory 'files'
 end
