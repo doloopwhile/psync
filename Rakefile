@@ -49,7 +49,10 @@ namespace :audience do
 end
 
 namespace :pages do
-  task build: [:pages]
+  task build: %w{
+    files/slide.pdf
+    files/bg.jpg
+  } + [:pages]
 
   task :pages => 'files' do
     sh 'rm -rf files/p-*.jpg'
@@ -60,6 +63,16 @@ namespace :pages do
       page_urls: n.times.map{|i| "/files/p-#{i}.jpg" }
     }
     File.write("files/index.json", j.to_json)
+  end
+
+  task 'files/slide.pdf' => %w{slide.pdf files} do
+    sh 'rm -rf files/slide.pdf'
+    sh 'cp slide.pdf files/slide.pdf'
+  end
+
+  task 'files/bg.jpg' => %w{bg.jpg files} do
+    sh 'rm -rf files/bg.jpg'
+    sh 'cp bg.jpg files/bg.jpg'
   end
 
   directory 'files'
