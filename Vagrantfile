@@ -3,6 +3,7 @@ Vagrant.configure('2') do |config|
     override.ssh.private_key_path = '~/.ssh/omoto_prd'
     override.vm.box = 'digital_ocean'
     override.vm.box_url = "https://github.com/smdahlen/vagrant-digitalocean/raw/master/box/digital_ocean.box"
+    override.vm.hostname = 'omoto-mts'
 
     provider.ssh_key_name = "omoto-mac"
     provider.token = 'd69b08046c6b77350a3087340503d3554f0723deeb7444d44af25c624d7c630d'
