@@ -41,8 +41,9 @@ namespace :audience do
   end
 
   file 'view/audience/index.js' => %w{view-src/elm-audience/index.elm view/audience} do |t|
-    Dir.chdir "view-src/elm-audience/"
-    sh "elm --build-dir=../../view/audience --only-js --bundle-runtime #{File.basename t.prerequisites[0]}"
+    Dir.chdir "view-src/elm-audience/" do
+      sh "elm --build-dir=../../view/audience --only-js --bundle-runtime #{File.basename t.prerequisites[0]}"
+    end
   end
 
   directory "view/audience"

@@ -89,7 +89,7 @@ maybeAppend mx marr =
 previews : [String] -> Int -> Int -> Float -> Element
 previews urls w h pageScroll =
   let
-    margin = 300
+    margin = 100
     pages = map (\url ->
               container w h middle <|
                 keepAspectScaledImage url (w - margin) (h - margin) 4 3
