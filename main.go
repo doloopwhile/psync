@@ -111,7 +111,7 @@ func main() {
 	})
 
 	r.Path("/").Methods("GET").HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		http.Redirect(res, req, "/view/elm-audience", http.StatusSeeOther)
+		http.Redirect(res, req, "/view/audience", http.StatusSeeOther)
 	})
 
 	n := negroni.New()

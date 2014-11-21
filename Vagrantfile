@@ -11,6 +11,6 @@ Vagrant.configure('2') do |config|
     provider.region = 'sgp1'
     provider.size = '512MB'
 
-    config.vm.synced_folder ".", "/root/psync"
+#     config.vm.synced_folder ".", "/root/psync"
   end
 end
